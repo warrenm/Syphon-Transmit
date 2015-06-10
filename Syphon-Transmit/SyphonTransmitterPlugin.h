@@ -31,7 +31,7 @@
 #import <Syphon/Syphon.h>
 #import <OpenGL/OpenGL.h>
 
-#define	PLUGIN_DISPLAY_NAME	L"Syphon Server Transmitter"
+#define	PLUGIN_DISPLAY_NAME	L"StereoVR HMD Viewer"
 
 typedef struct
 {
