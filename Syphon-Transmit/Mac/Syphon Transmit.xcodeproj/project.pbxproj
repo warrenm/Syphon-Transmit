@@ -63,7 +63,7 @@
 		7EFEE1D015E5641300B7561D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7EFEE20815E56EBE00B7561D /* SDK_File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDK_File.h; path = ../Adobe/Utils/SDK_File.h; sourceTree = SOURCE_ROOT; };
 		7EFEE21615E56F6400B7561D /* SDK_File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SDK_File.cpp; path = ../Adobe/Utils/SDK_File.cpp; sourceTree = SOURCE_ROOT; };
-		8D576316048677EA00EA77CD /* Syphon Transmit.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Syphon Transmit.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D576316048677EA00EA77CD /* Dashwood.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Dashwood.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D576317048677EA00EA77CD /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -132,7 +132,7 @@
 		19C28FB6FE9D52B211CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D576316048677EA00EA77CD /* Syphon Transmit.bundle */,
+				8D576316048677EA00EA77CD /* Dashwood.bundle */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -148,9 +148,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D57630D048677EA00EA77CD /* Syphon Transmit */ = {
+		8D57630D048677EA00EA77CD /* Dashwood */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Syphon Transmit" */;
+			buildConfigurationList = 1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Dashwood" */;
 			buildPhases = (
 				8D57630F048677EA00EA77CD /* Resources */,
 				8D576311048677EA00EA77CD /* Sources */,
@@ -162,10 +162,10 @@
 			dependencies = (
 				1B5FE5171B28C29700EED2A1 /* PBXTargetDependency */,
 			);
-			name = "Syphon Transmit";
+			name = Dashwood;
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = Transmitter;
-			productReference = 8D576316048677EA00EA77CD /* Syphon Transmit.bundle */;
+			productReference = 8D576316048677EA00EA77CD /* Dashwood.bundle */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -196,7 +196,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				8D57630D048677EA00EA77CD /* Syphon Transmit */,
+				8D57630D048677EA00EA77CD /* Dashwood */,
 			);
 		};
 /* End PBXProject section */
@@ -275,7 +275,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = "Syphon Transmit";
+				PRODUCT_NAME = Dashwood;
 				SDKROOT = macosx;
 				SYPHON_UNIQUE_CLASS_NAME_PREFIX = DashwoodMercuryTransmit;
 			};
@@ -295,7 +295,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "Syphon Transmit";
+				PRODUCT_NAME = Dashwood;
 				SDKROOT = macosx;
 				SYPHON_UNIQUE_CLASS_NAME_PREFIX = DashwoodMercuryTransmit;
 			};
@@ -340,7 +340,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Syphon Transmit" */ = {
+		1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Dashwood" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB911B08733D790010E9CD /* Debug */,

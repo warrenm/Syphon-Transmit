@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8D57630D048677EA00EA77CD"
                BuildableName = "Syphon Transmit.bundle"
-               BlueprintName = "Syphon Transmit"
+               BlueprintName = "Dashwood"
                ReferencedContainer = "container:Syphon Transmit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -57,7 +57,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D57630D048677EA00EA77CD"
             BuildableName = "Syphon Transmit.bundle"
-            BlueprintName = "Syphon Transmit"
+            BlueprintName = "Dashwood"
             ReferencedContainer = "container:Syphon Transmit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
