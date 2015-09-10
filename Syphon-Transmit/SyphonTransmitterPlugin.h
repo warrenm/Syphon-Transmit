@@ -31,7 +31,7 @@
 #import <Syphon/Syphon.h>
 #import <OpenGL/OpenGL.h>
 
-#define	PLUGIN_DISPLAY_NAME	L"StereoVR HMD Viewer"
+#define	PLUGIN_DISPLAY_NAME	L"Dashwood"
 
 typedef struct
 {
