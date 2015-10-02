@@ -347,7 +347,7 @@ SyphonTransmitPlugin::SyphonTransmitPlugin(tmStdParms* ioStdParms,
     @autoreleasepool
     {
         CGLPixelFormatObj mPxlFmt = NULL;
-        CGLPixelFormatAttribute attribs[] = {kCGLPFAAccelerated, kCGLPFANoRecovery, (CGLPixelFormatAttribute)NULL};
+        CGLPixelFormatAttribute attribs[] = {kCGLPFAAccelerated, kCGLPFANoRecovery, kCGLPFAAllowOfflineRenderers, (CGLPixelFormatAttribute)NULL};
         
         CGLError err = kCGLNoError;
         GLint numPixelFormats = 0;
