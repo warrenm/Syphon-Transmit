@@ -28,11 +28,22 @@
 #include <ctime>
 #endif
 
+#define SYPHON_TRANSMIT_USE_METAL
+
 #import <Syphon/Syphon.h>
+
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+
+#import <Metal/Metal.h>
+#define    PLUGIN_DISPLAY_NAME    L"Syphon Server Transmitter (Metal)"
+
+#else
+
 #import <OpenGL/OpenGL.h>
 #include <OpenGL/gl.h>
+#define    PLUGIN_DISPLAY_NAME    L"Syphon Server Transmitter"
 
-#define	PLUGIN_DISPLAY_NAME	L"Syphon Server Transmitter"
+#endif
 
 typedef struct
 {
@@ -68,7 +79,7 @@ public:
 		const SDKDevicePtr& inDevice,
 		const SDKSettings& inSettings,
 		const SDKSuites& inSuites,
-        SyphonServer* syphonServer);
+        SyphonServerBase *syphonServer);
 
 	~SyphonTransmitInstance();
 
@@ -114,10 +125,15 @@ private:
 
 	float						mPlaybackSpeed;
 	prBool						mPlaying;
-    
+
     // Our Syphon Server is passed in from our Plugin below during instantiation
     // We only use it to publish frames, so we dont do anything like dealloc it, etc.
-    SyphonServer* mSyphonServerParentInstance;
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+    SyphonMetalServer* mSyphonServerParentInstance;
+    id<MTLCommandQueue> mCommandQueue;
+#else
+    SyphonOpenGLServer* mSyphonServerParentInstance;
+#endif
 };
 
 
@@ -150,8 +166,13 @@ public:
 		const tmStdParms* inStdParms,
 		tmInstance* inInstance);
 
-    SyphonServer* mSyphonServer;
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+    SyphonMetalServer* mSyphonServer;
+    id<MTLDevice> mMetalDevice;
+#else
+    SyphonOpenGLServer* mSyphonServer;
     CGLContextObj mCGLContext;
+#endif
 
 private:
 	SDKDevicePtr	mDevice;

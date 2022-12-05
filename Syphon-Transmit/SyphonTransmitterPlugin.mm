@@ -23,6 +23,9 @@
 #include "SyphonTransmitterPlugin.h"
 #include <stdio.h>
 #include <ctime>
+
+#import <Accelerate/Accelerate.h>
+
 using namespace SDK;
 
 struct ClockInstanceData
@@ -74,7 +77,8 @@ void UpdateClock(void* inInstanceData, csSDK_int32 inPluginID, prSuiteError inSt
         
         // Sleep for a frame's length
         // Try sleeping for the half the time, since Mac OS seems to oversleep :)
-        usleep(timeBetweenClockUpdates / 2);
+        useconds_t sleepTime = (useconds_t)(timeBetweenClockUpdates / 2);
+        usleep(sleepTime);
     }
     
     NSLog( @"Clock with callback context %llx exited.", (long long)*clockInstanceData->callbackContextPtr);
@@ -88,7 +92,7 @@ SyphonTransmitInstance::SyphonTransmitInstance(const tmInstance* inInstance,
                                                const SDKDevicePtr& inDevice,
                                                const SDKSettings& inSettings,
                                                const SDKSuites& inSuites,
-                                               SyphonServer* syphonServer     )
+                                               SyphonServerBase *syphonServer     )
 :
 mDevice(inDevice),
 mSettings(inSettings),
@@ -98,11 +102,13 @@ mSuites(inSuites)
     mCallbackContext = 0;
     mUpdateClockRegistration = 0;
     mPlaying = kPrFalse;
-    
     if(syphonServer)
     {
         NSLog(@"Assigning Plugin Syphon Server to instance %p", syphonServer);
-        mSyphonServerParentInstance = syphonServer;
+        mSyphonServerParentInstance = (SyphonMetalServer *)syphonServer;
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+        mCommandQueue = [mSyphonServerParentInstance.device newCommandQueue];
+#endif
     }
     
     mSuites.TimeSuite->GetTicksPerSecond(&mTicksPerSecond);
@@ -112,6 +118,9 @@ mSuites(inSuites)
 
 SyphonTransmitInstance::~SyphonTransmitInstance()
 {
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+    [mCommandQueue release];
+#endif
     // TODO: Do we want to nil our syphon handle here?
     // Does that fuck with retain count / release ?
 }
@@ -119,7 +128,6 @@ SyphonTransmitInstance::~SyphonTransmitInstance()
 
 #pragma mark - Query Video Mode
 
-/* We're not picky.  We claim to support any format the host can throw at us (yeah right). */
 tmResult SyphonTransmitInstance::QueryVideoMode(const tmStdParms* inStdParms,
                                                 const tmInstance* inInstance,
                                                 csSDK_int32 inQueryIterationIndex,
@@ -130,7 +138,7 @@ tmResult SyphonTransmitInstance::QueryVideoMode(const tmStdParms* inStdParms,
     outVideoMode->outPARNum = 0;
     outVideoMode->outPARDen = 0;
     outVideoMode->outFieldType = prFieldsNone;
-    outVideoMode->outPixelFormat =  PrPixelFormat_BGRA_4444_8u;//PrPixelFormat_Any;// PrPixelFormat_BGRA_4444_8u; // or PrPixelFormat_ARGB_4444_8u
+    outVideoMode->outPixelFormat =  PrPixelFormat_BGRA_4444_8u;
     outVideoMode->outLatency = inInstance->inVideoFrameRate * 1; // Ask for 5 frames preroll
     
     mVideoFrameRate = inInstance->inVideoFrameRate;
@@ -255,7 +263,7 @@ tmResult SyphonTransmitInstance::PushVideo(const tmStdParms* inStdParms,
     csSDK_uint32 parNum = 0,
     parDen = 0;
     PrPixelFormat pixelFormat = PrPixelFormat_Invalid;
-    
+
     frameTimeInSeconds = (float) inPushVideo->inTime / mTicksPerSecond;
     mSuites.PPixSuite->GetBounds(inPushVideo->inFrames[0].inFrame, &frameBounds);
     mSuites.PPixSuite->GetPixelAspectRatio(inPushVideo->inFrames[0].inFrame, &parNum, &parDen);
@@ -268,20 +276,46 @@ tmResult SyphonTransmitInstance::PushVideo(const tmStdParms* inStdParms,
     mSuites.PPixSuite->GetPixels(inPushVideo->inFrames[0].inFrame,
                                  PrPPixBufferAccess_ReadOnly,
                                  &pixels);
-    
+
     @autoreleasepool
     {
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+        NSUInteger width = abs(frameBounds.right - frameBounds.left);
+        NSUInteger height = abs(frameBounds.top - frameBounds.bottom);
+        MTLRegion imageRegion = MTLRegionMake2D(0, 0, width, height);
+        NSRect imageRect = NSMakeRect(0, 0, width, height);
+        NSUInteger bytesPerRow = rowBytes;
+
+        MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                                     width:width
+                                                                                                    height:height
+                                                                                                 mipmapped:NO];
+        textureDescriptor.usage = MTLTextureUsageShaderRead;
+        textureDescriptor.storageMode = MTLStorageModeManaged;
+        // TODO: Keep a heap or pool of upload textures rather than reallocating every frame.
+        id<MTLTexture> uploadTexture = [mSyphonServerParentInstance.device newTextureWithDescriptor:textureDescriptor];
+        [uploadTexture replaceRegion:imageRegion mipmapLevel:0 withBytes:pixels bytesPerRow:bytesPerRow];
+
+        id<MTLCommandBuffer> commandBuffer = [mCommandQueue commandBuffer];
+        [mSyphonServerParentInstance publishFrameTexture:uploadTexture
+                                         onCommandBuffer:commandBuffer
+                                             imageRegion:imageRect
+                                                 flipped:YES];
+        [commandBuffer commit];
+
+        [uploadTexture release];
+#else
         // bind our syphon GL Context
         CGLSetCurrentContext(mSyphonServerParentInstance.context);
-        
+
         NSRect syphonRect = NSMakeRect(0, 0, abs(frameBounds.right - frameBounds.left), abs(frameBounds.top - frameBounds.bottom));
-        
+
         // TODO: use bind to draw frame of size / unbind
         GLuint texture = 0;
         glGenTextures(1, &texture);
         glEnable(GL_TEXTURE_RECTANGLE_EXT);
         glBindTexture(GL_TEXTURE_RECTANGLE_EXT, texture);
-        
+
         GLuint bitsPerBlock = 32;
         GLuint blockWidth = 1;
         GLuint blockHeight = 1;
@@ -297,31 +331,33 @@ tmResult SyphonTransmitInstance::PushVideo(const tmStdParms* inStdParms,
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
         glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
-        
+
         glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
-        
+
         glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
         glTextureRangeAPPLE(GL_TEXTURE_RECTANGLE_EXT, 32 * syphonRect.size.width * syphonRect.size.height, pixels);
-        
+
         glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA, syphonRect.size.width, syphonRect.size.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
-        
+
         [mSyphonServerParentInstance publishFrameTexture:texture textureTarget:GL_TEXTURE_RECTANGLE_EXT imageRegion:syphonRect textureDimensions:syphonRect.size flipped:NO];
-        
+
         glDeleteTextures(1, &texture);
+#endif
     }
-				
+
     // Dispose of the PPix(es) when done!
     for (int i=0; i< inPushVideo->inFrameCount; i++)
     {
         mSuites.PPixSuite->Dispose(inPushVideo->inFrames[i].inFrame);
     }
-    
+
     return tmResult_Success;
 }
+
 
 #pragma mark - Trasmit Plugin Methods
 
@@ -343,9 +379,22 @@ SyphonTransmitPlugin::SyphonTransmitPlugin(tmStdParms* ioStdParms,
     mSuites.SPBasic->AcquireSuite(kPrSDKPPixSuite, kPrSDKPPixSuiteVersion, const_cast<const void**>(reinterpret_cast<void**>(&mSuites.PPixSuite)));
     mSuites.SPBasic->AcquireSuite(kPrSDKThreadedWorkSuite, kPrSDKThreadedWorkSuiteVersion3, const_cast<const void**>(reinterpret_cast<void**>(&mSuites.ThreadedWorkSuite)));
     mSuites.SPBasic->AcquireSuite(kPrSDKTimeSuite, kPrSDKTimeSuiteVersion, const_cast<const void**>(reinterpret_cast<void**>(&mSuites.TimeSuite)));
-    
+
     @autoreleasepool
     {
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+        // TODO: Add plugin UI to select Metal device.
+        mMetalDevice = MTLCreateSystemDefaultDevice();
+
+        if (mMetalDevice) {
+            mSyphonServer = [[SyphonMetalServer alloc] initWithName:@"Selected Source"
+                                                             device:mMetalDevice
+                                                            options:@{ SyphonServerOptionIsPrivate : @NO }];
+
+            NSLog(@"Initialized Syphon Server %@ description: %@, for instance %p, with device %@",
+                  mSyphonServer, [mSyphonServer serverDescription], this, mMetalDevice);
+        }
+#else
         CGLPixelFormatObj mPxlFmt = NULL;
         CGLPixelFormatAttribute attribs[] = {kCGLPFAAccelerated, kCGLPFANoRecovery, (CGLPixelFormatAttribute)NULL};
         
@@ -372,6 +421,7 @@ SyphonTransmitPlugin::SyphonTransmitPlugin(tmStdParms* ioStdParms,
             
             NSLog(@"Initting Syphon Server %@ description: %@,  for instance %p", mSyphonServer, [mSyphonServer serverDescription], this);
         }
+#endif
     }
 }
 
@@ -392,11 +442,16 @@ SyphonTransmitPlugin::~SyphonTransmitPlugin()
             [mSyphonServer stop];
             mSyphonServer = nil;
         }
+#if defined(SYPHON_TRANSMIT_USE_METAL)
+        [mMetalDevice release];
+        mMetalDevice = nil;
+#else
         if(mCGLContext)
         {
             CGLReleaseContext(mCGLContext);
             mCGLContext = NULL;
         }
+#endif
     }
 }
 

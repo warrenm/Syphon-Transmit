@@ -15,6 +15,7 @@
 		7E48CD0F1700FCA400D1EFDC /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E48CD0E1700FCA400D1EFDC /* Cocoa.framework */; };
 		7EFEE1D115E5641300B7561D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EFEE1D015E5641300B7561D /* Foundation.framework */; };
 		7EFEE21715E56F6400B7561D /* SDK_File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EFEE21615E56F6400B7561D /* SDK_File.cpp */; };
+		835DCC6F293D5F02001D4F99 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 835DCC6E293D5F01001D4F99 /* Metal.framework */; };
 		8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
 		8D5B49A804867FD3000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D5B49A704867FD3000E48DA /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
@@ -63,6 +64,8 @@
 		7EFEE1D015E5641300B7561D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7EFEE20815E56EBE00B7561D /* SDK_File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDK_File.h; path = ../Adobe/Utils/SDK_File.h; sourceTree = SOURCE_ROOT; };
 		7EFEE21615E56F6400B7561D /* SDK_File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SDK_File.cpp; path = ../Adobe/Utils/SDK_File.cpp; sourceTree = SOURCE_ROOT; };
+		835DCC6E293D5F01001D4F99 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		83E34CF6293D7799005D2CDB /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		8D576316048677EA00EA77CD /* Syphon Transmit.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Syphon Transmit.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D576317048677EA00EA77CD /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,6 +79,7 @@
 				1B006DEC1B0BCBFE00B7A99C /* OpenGL.framework in Frameworks */,
 				8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */,
 				7EFEE1D115E5641300B7561D /* Foundation.framework in Frameworks */,
+				835DCC6F293D5F02001D4F99 /* Metal.framework in Frameworks */,
 				7E48CD0F1700FCA400D1EFDC /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -91,6 +95,7 @@
 				089C167CFE841241C02AAC07 /* Resources */,
 				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
 				19C28FB6FE9D52B211CA2CBB /* Products */,
+				835DCC6D293D5F01001D4F99 /* Frameworks */,
 			);
 			name = Transmitter;
 			sourceTree = "<group>";
@@ -143,6 +148,15 @@
 				1B5FE5111B28BE7B00EED2A1 /* Syphon.framework */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		835DCC6D293D5F01001D4F99 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				83E34CF6293D7799005D2CDB /* Accelerate.framework */,
+				835DCC6E293D5F01001D4F99 /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -304,7 +318,7 @@
 		1DEB911F08733D790010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
@@ -316,6 +330,7 @@
 					../../../Headers/,
 					../../../Utils/,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = bundle;
@@ -325,13 +340,14 @@
 		1DEB912008733D790010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = bundle;
 			};
