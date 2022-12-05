@@ -105,9 +105,11 @@ mSuites(inSuites)
     if(syphonServer)
     {
         NSLog(@"Assigning Plugin Syphon Server to instance %p", syphonServer);
-        mSyphonServerParentInstance = (SyphonMetalServer *)syphonServer;
 #if defined(SYPHON_TRANSMIT_USE_METAL)
+        mSyphonServerParentInstance = (SyphonMetalServer *)syphonServer;
         mCommandQueue = [mSyphonServerParentInstance.device newCommandQueue];
+#else
+        mSyphonServerParentInstance = (SyphonOpenGLServer *)syphonServer;
 #endif
     }
     
@@ -417,7 +419,7 @@ SyphonTransmitPlugin::SyphonTransmitPlugin(tmStdParms* ioStdParms,
         
         if(mCGLContext)
         {
-            mSyphonServer = [[SyphonServer alloc] initWithName:@"Selected Source" context:mCGLContext options:@{SyphonServerOptionIsPrivate : @NO}];
+            mSyphonServer = [[SyphonOpenGLServer alloc] initWithName:@"Selected Source" context:mCGLContext options:@{SyphonServerOptionIsPrivate : @NO}];
             
             NSLog(@"Initting Syphon Server %@ description: %@,  for instance %p", mSyphonServer, [mSyphonServer serverDescription], this);
         }
